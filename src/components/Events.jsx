@@ -5,7 +5,7 @@ const Events = () => {
     const [selectedId, setSelectedId] = useState(null);
 
     const flyers = [
-        { id: 1, title: 'Knockout Party', date: 'Dec 19', image: '/assets/fight-poster.jpg', info: 'Gillie & Wallo\'s Knockout Party' },
+        { id: 1, title: 'Knockout Party', date: 'Dec 19', image: '/assets/fight-card-updated.jpg', info: 'Gillie & Wallo\'s Knockout Party' },
         { id: 2, title: 'DK vs StreetMoney', date: 'Main Event', image: '/assets/face-off.png', info: 'Official Watch Party' }
     ];
 

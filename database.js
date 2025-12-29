@@ -20,11 +20,28 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS videos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    filename TEXT NOT NULL,
+    filename TEXT,
     url TEXT NOT NULL,
+    video_type TEXT DEFAULT 'upload',
+    embed_url TEXT,
     upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+// Migration: Add new columns if they don't exist
+try {
+  db.exec(`ALTER TABLE videos ADD COLUMN video_type TEXT DEFAULT 'upload'`);
+  console.log('Added video_type column to videos table');
+} catch (e) {
+  // Column already exists
+}
+
+try {
+  db.exec(`ALTER TABLE videos ADD COLUMN embed_url TEXT`);
+  console.log('Added embed_url column to videos table');
+} catch (e) {
+  // Column already exists
+}
 
 console.log('Database initialized at:', dbPath);
 

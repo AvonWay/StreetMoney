@@ -56,17 +56,29 @@ const Videos = () => {
                                 className="group relative bg-white rounded-[2rem] overflow-hidden shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-500"
                             >
                                 <div className="aspect-video relative overflow-hidden bg-black">
-                                    <video
-                                        src={video.url}
-                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                        controls
-                                        preload="metadata"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity">
-                                        <div className="w-16 h-16 bg-gold-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                                            <FaPlay className="ml-1" />
-                                        </div>
-                                    </div>
+                                    {video.video_type === 'youtube' || video.video_type === 'url' ? (
+                                        <iframe
+                                            src={video.embed_url || video.url}
+                                            className="w-full h-full"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            title={video.name}
+                                        />
+                                    ) : (
+                                        <>
+                                            <video
+                                                src={video.url}
+                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                                controls
+                                                preload="metadata"
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity">
+                                                <div className="w-16 h-16 bg-gold-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                                                    <FaPlay className="ml-1" />
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="p-6">
                                     <div className="flex items-center gap-3 text-gold-600 mb-2">

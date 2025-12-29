@@ -5,7 +5,10 @@ const AdminDashboard = () => {
     const [songs, setSongs] = useState([]);
     const [videos, setVideos] = useState([]);
     const [activeTab, setActiveTab] = useState('music');
+    const [uploadMode, setUploadMode] = useState('file'); // 'file' or 'url'
     const [file, setFile] = useState(null);
+    const [videoUrl, setVideoUrl] = useState('');
+    const [videoName, setVideoName] = useState('');
     const [status, setStatus] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -47,7 +50,7 @@ const AdminDashboard = () => {
     const handleLogin = (e) => {
         e.preventDefault();
         // Simple client-side check for now, can be moved to server-side session later
-        if (password === 'streetmoney2025') {
+        if (password === 'StreetMoney60') {
             setIsAuthenticated(true);
         } else {
             alert('Incorrect Password');
@@ -96,6 +99,41 @@ const AdminDashboard = () => {
                 } else {
                     setStatus('Error: Server returned unexpected content (Check logs)');
                 }
+            }
+        } catch (error) {
+            setStatus('Error: ' + error.message);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleUrlSubmit = async (e) => {
+        e.preventDefault();
+        if (!videoUrl || !videoName) {
+            setStatus('Please provide both video name and URL.');
+            return;
+        }
+
+        setIsUploading(true);
+        setStatus('Adding video...');
+
+        try {
+            const response = await fetch('/api/videos/add-url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: videoName, url: videoUrl }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setStatus(`Success! Video added (${data.videoType}).`);
+                setVideoUrl('');
+                setVideoName('');
+                fetchVideos();
+            } else {
+                setStatus('Error: ' + data.error);
             }
         } catch (error) {
             setStatus('Error: ' + error.message);
@@ -192,36 +230,103 @@ const AdminDashboard = () => {
                 <div className="grid lg:grid-cols-2 gap-12">
                     {/* Upload Section */}
                     <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100">
-                        <h3 className="text-xl font-heading font-black text-gray-900 uppercase mb-6">Upload New {activeTab === 'music' ? 'Track' : 'Video'}</h3>
-                        <form onSubmit={handleUpload} className="space-y-6">
-                            <div className="relative border-2 border-dashed border-gray-200 rounded-3xl py-12 px-6 hover:border-gold-400 transition-colors group cursor-pointer">
-                                <input
-                                    type="file"
-                                    accept={activeTab === 'music' ? '.mp3' : 'video/*'}
-                                    onChange={handleFileChange}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                                <div className="text-center space-y-2">
-                                    <FaCloudUploadAlt className="mx-auto text-4xl text-gray-300 group-hover:text-gold-500 transition-colors" />
-                                    <p className="text-sm font-medium text-gray-700">
-                                        {file ? file.name : `Click to select ${activeTab === 'music' ? 'MP3' : 'Video'}`}
-                                    </p>
-                                    <p className="text-xs text-gray-400">Max file size: {activeTab === 'music' ? '20MB' : '100MB'}</p>
-                                </div>
+                        <h3 className="text-xl font-heading font-black text-gray-900 uppercase mb-6">
+                            {activeTab === 'music' ? 'Upload New Track' : 'Add New Video'}
+                        </h3>
+
+                        {/* Mode Toggle for Videos */}
+                        {activeTab === 'videos' && (
+                            <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-xl">
+                                <button
+                                    type="button"
+                                    onClick={() => setUploadMode('file')}
+                                    className={`flex-1 py-3 px-4 rounded-lg font-heading font-bold uppercase text-sm tracking-wider transition-all ${uploadMode === 'file' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                                >
+                                    Upload File
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setUploadMode('url')}
+                                    className={`flex-1 py-3 px-4 rounded-lg font-heading font-bold uppercase text-sm tracking-wider transition-all ${uploadMode === 'url' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                                >
+                                    Add URL
+                                </button>
                             </div>
-                            <button
-                                type="submit"
-                                disabled={isUploading}
-                                className={`w-full py-4 rounded-2xl font-heading font-bold uppercase tracking-widest transition-all ${isUploading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gold-600 text-white hover:bg-gold-700 shadow-lg active:scale-95'}`}
-                            >
-                                {isUploading ? 'Uploading...' : `Publish ${activeTab === 'music' ? 'Track' : 'Video'}`}
-                            </button>
-                            {status && (
-                                <p className={`text-center text-sm font-bold ${status.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>
-                                    {status}
-                                </p>
-                            )}
-                        </form>
+                        )}
+
+                        {/* File Upload Form */}
+                        {(activeTab === 'music' || uploadMode === 'file') && (
+                            <form onSubmit={handleUpload} className="space-y-6">
+                                <div className="relative border-2 border-dashed border-gray-200 rounded-3xl py-12 px-6 hover:border-gold-400 transition-colors group cursor-pointer">
+                                    <input
+                                        type="file"
+                                        accept={activeTab === 'music' ? '.mp3' : 'video/*'}
+                                        onChange={handleFileChange}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    />
+                                    <div className="text-center space-y-2">
+                                        <FaCloudUploadAlt className="mx-auto text-4xl text-gray-300 group-hover:text-gold-500 transition-colors" />
+                                        <p className="text-sm font-medium text-gray-700">
+                                            {file ? file.name : `Click to select ${activeTab === 'music' ? 'MP3' : 'Video'}`}
+                                        </p>
+                                        <p className="text-xs text-gray-400">Max file size: {activeTab === 'music' ? '20MB' : '100MB'}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isUploading}
+                                    className={`w-full py-4 rounded-2xl font-heading font-bold uppercase tracking-widest transition-all ${isUploading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gold-600 text-white hover:bg-gold-700 shadow-lg active:scale-95'}`}
+                                >
+                                    {isUploading ? 'Uploading...' : `Publish ${activeTab === 'music' ? 'Track' : 'Video'}`}
+                                </button>
+                                {status && (
+                                    <p className={`text-center text-sm font-bold ${status.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>
+                                        {status}
+                                    </p>
+                                )}
+                            </form>
+                        )}
+
+                        {/* URL Input Form */}
+                        {activeTab === 'videos' && uploadMode === 'url' && (
+                            <form onSubmit={handleUrlSubmit} className="space-y-6">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Video Name</label>
+                                        <input
+                                            type="text"
+                                            value={videoName}
+                                            onChange={(e) => setVideoName(e.target.value)}
+                                            placeholder="Enter video title"
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-500 transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Video URL</label>
+                                        <input
+                                            type="url"
+                                            value={videoUrl}
+                                            onChange={(e) => setVideoUrl(e.target.value)}
+                                            placeholder="https://www.youtube.com/watch?v=..."
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-500 transition-all"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-2">Supports YouTube, Vimeo, and direct video URLs</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isUploading}
+                                    className={`w-full py-4 rounded-2xl font-heading font-bold uppercase tracking-widest transition-all ${isUploading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gold-600 text-white hover:bg-gold-700 shadow-lg active:scale-95'}`}
+                                >
+                                    {isUploading ? 'Adding...' : 'Add Video'}
+                                </button>
+                                {status && (
+                                    <p className={`text-center text-sm font-bold ${status.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>
+                                        {status}
+                                    </p>
+                                )}
+                            </form>
+                        )}
                     </div>
 
                     {/* Content List */}

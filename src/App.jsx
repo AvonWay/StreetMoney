@@ -9,6 +9,7 @@ import Music from './components/Music';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
+import Bio from './components/Bio';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           </div>
         } />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/bio" element={<Bio />} />
       </Routes>
     </Router>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { FaSpotify, FaApple, FaYoutube, FaSoundcloud, FaPlay, FaPause, FaDownload } from 'react-icons/fa';
 
 const Music = () => {
@@ -79,7 +80,7 @@ const Music = () => {
                     >
                         <div className="relative aspect-square max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl group">
                             <img
-                                src="/assets/hero-bg.jpg"
+                                src="/assets/track-selection-updated.jpg"
                                 alt="Album Art"
                                 className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-all duration-700"
                             />
@@ -142,9 +143,9 @@ const Music = () => {
                         )}
 
                         <div className="pt-8">
-                            <button className="px-8 py-4 bg-gray-900 text-white font-heading font-bold uppercase tracking-widest hover:bg-gold-600 transition-all w-full md:w-auto shadow-xl">
-                                Full Discography
-                            </button>
+                            <Link to="/bio" className="inline-block px-8 py-4 bg-gray-900 text-white font-heading font-bold uppercase tracking-widest hover:bg-gold-600 transition-all w-full md:w-auto shadow-xl text-center">
+                                Full Bio
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -155,10 +155,40 @@ app.post('/api/videos/upload', uploadVideo.single('video'), (req, res) => {
         const filename = req.file.filename;
         const url = `/videos/${filename}`;
 
-        const info = db.prepare('INSERT INTO videos (name, filename, url) VALUES (?, ?, ?)').run(name, filename, url);
+        const info = db.prepare('INSERT INTO videos (name, filename, url, video_type) VALUES (?, ?, ?, ?)').run(name, filename, url, 'upload');
         res.status(200).json({ success: true, id: info.lastInsertRowid, file: filename });
     } catch (err) {
         res.status(500).json({ error: 'Failed to save video to database' });
+    }
+});
+
+// Add video via URL (YouTube, etc.)
+app.post('/api/videos/add-url', (req, res) => {
+    const { name, url } = req.body;
+
+    if (!name || !url) {
+        return res.status(400).json({ error: 'Name and URL are required' });
+    }
+
+    try {
+        // Convert YouTube URL to embed format
+        let embedUrl = url;
+        let videoType = 'url';
+
+        // Check if it's a YouTube URL
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const match = url.match(youtubeRegex);
+
+        if (match && match[1]) {
+            embedUrl = `https://www.youtube.com/embed/${match[1]}`;
+            videoType = 'youtube';
+        }
+
+        const info = db.prepare('INSERT INTO videos (name, url, video_type, embed_url) VALUES (?, ?, ?, ?)').run(name, url, videoType, embedUrl);
+        res.status(200).json({ success: true, id: info.lastInsertRowid, videoType });
+    } catch (err) {
+        console.error('Error adding video URL:', err);
+        res.status(500).json({ error: 'Failed to save video URL to database' });
     }
 });
 
