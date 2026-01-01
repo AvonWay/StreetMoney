@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const About = () => {
+    const [content, setContent] = useState({});
+
+    useEffect(() => {
+        fetch('/api/content')
+            .then(res => res.json())
+            .then(data => setContent(data))
+            .catch(err => console.error(err));
+    }, []);
+
     return (
         <section id="about" className="py-24 bg-white text-gray-900 relative overflow-hidden">
             {/* Massive Background Stroke Text */}
@@ -45,22 +54,34 @@ const About = () => {
                         >
                             <h2 className="text-xl text-gold-600 font-bold tracking-[0.2em] uppercase mb-4">The Origin</h2>
                             <h3 className="text-5xl md:text-7xl font-heading font-black text-gray-900 leading-none mb-8">
-                                RAW ENERGY. <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-600 to-gold-400">UNFILTERED.</span>
+                                {content.about_heading ? (
+                                    <span dangerouslySetInnerHTML={{ __html: content.about_heading.replace(/\n/g, '<br />') }} />
+                                ) : (
+                                    <>
+                                        RAW ENERGY. <br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-600 to-gold-400">UNFILTERED.</span>
+                                    </>
+                                )}
                             </h3>
 
                             <div className="space-y-6 text-lg text-gray-600 leading-relaxed font-sans max-w-2xl">
-                                <p className="border-l-4 border-gold-500 pl-6 italic">
-                                    Born from the gritty streets and the hustle mentality, StreetMoney represents more than just music—it's a pursuit of wealth, authenticity, and securing the bag.
-                                </p>
+                                {content.about_text ? (
+                                    <div dangerouslySetInnerHTML={{ __html: content.about_text.replace(/\n/g, '<br />') }} />
+                                ) : (
+                                    <>
+                                        <p className="border-l-4 border-gold-500 pl-6 italic">
+                                            Born from the gritty streets and the hustle mentality, StreetMoney represents more than just music—it's a pursuit of wealth, authenticity, and securing the bag.
+                                        </p>
 
-                                <p>
-                                    Evolving from the massive success of the <span className="text-black font-bold">Million Dollaz Worth Of Game</span> universe, StreetMoney/Fighter is a core force in the <span className="text-black font-bold">Knockout Party</span> series. Founded by legends <span className="text-black font-bold">Gillie Da King</span> and <span className="text-black font-bold">Wallo267</span>, these events blend the raw intensity of celebrity boxing with the fire of live musical performances.
-                                </p>
+                                        <p>
+                                            Evolving from the massive success of the <span className="text-black font-bold">Million Dollaz Worth Of Game</span> universe, StreetMoney/Fighter is a core force in the <span className="text-black font-bold">Knockout Party</span> series. Founded by legends <span className="text-black font-bold">Gillie Da King</span> and <span className="text-black font-bold">Wallo267</span>, these events blend the raw intensity of celebrity boxing with the fire of live musical performances.
+                                        </p>
 
-                                <p>
-                                    As a star of the KO Party, StreetMoney brings that "unapologetically real" vibe to the stage and the ring. It's about the game, the hustle, and the raw energy that defines the community.
-                                </p>
+                                        <p>
+                                            As a star of the KO Party, StreetMoney brings that "unapologetically real" vibe to the stage and the ring. It's about the game, the hustle, and the raw energy that defines the community.
+                                        </p>
+                                    </>
+                                )}
                             </div>
                         </motion.div>
 

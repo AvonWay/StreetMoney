@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 const Hero = () => {
@@ -10,6 +10,15 @@ const Hero = () => {
 
     const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
     const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+    const [content, setContent] = useState({});
+
+    useEffect(() => {
+        fetch('/api/content')
+            .then(res => res.json())
+            .then(data => setContent(data))
+            .catch(err => console.error(err));
+    }, []);
 
     return (
         <section id="home" ref={ref} className="relative h-screen w-full overflow-hidden flex items-center justify-center">
@@ -67,7 +76,7 @@ const Hero = () => {
                             {/* Album Text */}
                             <div className="text-left">
                                 <h3 className="text-xl md:text-3xl font-heading font-black text-gray-900 leading-none mb-3 uppercase tracking-tighter">
-                                    Gift From <span className="text-gold-600 underline decoration-4 underline-offset-4">The Streets</span>
+                                    {content.hero_subtitle || <>Gift From <span className="text-gold-600 underline decoration-4 underline-offset-4">The Streets</span></>}
                                 </h3>
                                 <div className="flex items-center gap-3">
                                     <span className="px-3 py-1 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full">Coming Soon</span>

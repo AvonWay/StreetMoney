@@ -22,6 +22,7 @@ const Navbar = () => {
         { title: 'Events', href: '#events' },
         { title: 'Music', href: '#music' },
         { title: 'Contact', href: '#contact' },
+        { title: 'Gloves Up', href: '/gloves-up', isRoute: true },
         { title: 'Dashboard', href: '/admin', isRoute: true },
     ];
 

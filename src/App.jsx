@@ -10,6 +10,8 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import Bio from './components/Bio';
+import GlovesUp from './components/GlovesUp';
+
 
 function App() {
   return (
@@ -29,6 +31,7 @@ function App() {
         } />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/bio" element={<Bio />} />
+        <Route path="/gloves-up" element={<GlovesUp />} />
       </Routes>
     </Router>
   );

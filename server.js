@@ -66,6 +66,14 @@ const videoStorage = multer.diskStorage({
     }
 });
 
+const pictureStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+
 const uploadMusic = multer({
     storage: musicStorage,
     limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
@@ -82,6 +90,36 @@ const uploadVideo = multer({
         if (file.mimetype.startsWith('video/')) cb(null, true);
         else cb(new Error('Only video files are allowed!'), false);
     }
+});
+
+const uploadPicture = multer({
+    storage: pictureStorage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) cb(null, true);
+        else cb(new Error('Only image files are allowed!'), false);
+    }
+});
+
+// Minimal Analytics Middleware
+app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads') && !req.path.startsWith('/assets') && !req.path.startsWith('/videos')) {
+        try {
+            // Simple hash of IP for privacy
+            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            const userAgent = req.headers['user-agent'] || '';
+            const isMobile = /mobile/i.test(userAgent);
+
+            db.prepare('INSERT INTO visits (page, ip_hash, device_type) VALUES (?, ?, ?)').run(
+                req.path,
+                ip, // In prod, hash this
+                isMobile ? 'mobile' : 'desktop'
+            );
+        } catch (err) {
+            console.error('Analytics log error:', err);
+        }
+    }
+    next();
 });
 
 app.use(cors());
@@ -164,9 +202,12 @@ app.post('/api/videos/upload', uploadVideo.single('video'), (req, res) => {
 
 // Add video via URL (YouTube, etc.)
 app.post('/api/videos/add-url', (req, res) => {
+    console.log('Received video URL request:', req.body);
+
     const { name, url } = req.body;
 
     if (!name || !url) {
+        console.error('Missing required fields:', { name: !!name, url: !!url });
         return res.status(400).json({ error: 'Name and URL are required' });
     }
 
@@ -182,13 +223,200 @@ app.post('/api/videos/add-url', (req, res) => {
         if (match && match[1]) {
             embedUrl = `https://www.youtube.com/embed/${match[1]}`;
             videoType = 'youtube';
+            console.log('YouTube video detected, embed URL:', embedUrl);
+        } else {
+            console.log('Non-YouTube URL, using as-is:', url);
         }
 
         const info = db.prepare('INSERT INTO videos (name, url, video_type, embed_url) VALUES (?, ?, ?, ?)').run(name, url, videoType, embedUrl);
+        console.log('Video URL added successfully:', { id: info.lastInsertRowid, videoType });
         res.status(200).json({ success: true, id: info.lastInsertRowid, videoType });
     } catch (err) {
         console.error('Error adding video URL:', err);
-        res.status(500).json({ error: 'Failed to save video URL to database' });
+        res.status(500).json({ error: 'Failed to save video URL to database', details: err.message });
+    }
+});
+
+// Picture API
+app.get('/api/pictures', (req, res) => {
+    try {
+        const pictures = db.prepare('SELECT * FROM pictures ORDER BY upload_date DESC').all();
+        res.status(200).json(pictures);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch pictures from database' });
+    }
+});
+
+app.post('/api/pictures/upload', uploadPicture.single('picture'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No picture uploaded' });
+
+    try {
+        const name = req.file.originalname;
+        const filename = req.file.filename;
+        const url = `/uploads/${filename}`;
+
+        const info = db.prepare('INSERT INTO pictures (name, filename, url) VALUES (?, ?, ?)').run(name, filename, url);
+        res.status(200).json({ success: true, id: info.lastInsertRowid, file: filename, url: url });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to save picture to database' });
+    }
+});
+
+app.delete('/api/pictures/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        // Verify picture exists first
+        const picture = db.prepare('SELECT * FROM pictures WHERE id = ?').get(id);
+        if (!picture) return res.status(404).json({ error: 'Picture not found' });
+
+        // Delete from DB
+        db.prepare('DELETE FROM pictures WHERE id = ?').run(id);
+
+        // Optionally delete file from filesystem
+        const filePath = path.join(uploadsDir, picture.filename);
+        if (fs.existsSync(filePath)) {
+            try {
+                fs.unlinkSync(filePath);
+            } catch (fsErr) {
+                console.warn('Failed to delete file from disk:', fsErr);
+            }
+        }
+
+        res.status(200).json({ success: true, message: 'Picture deleted' });
+    } catch (err) {
+        console.error("Error deleting picture:", err);
+        res.status(500).json({ error: 'Failed to delete picture' });
+    }
+});
+
+// Video Delete API
+app.delete('/api/videos/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const video = db.prepare('SELECT * FROM videos WHERE id = ?').get(id);
+        if (!video) return res.status(404).json({ error: 'Video not found' });
+
+        db.prepare('DELETE FROM videos WHERE id = ?').run(id);
+
+        if (video.video_type === 'upload') {
+            const filePath = path.join(videosDir, video.filename);
+            if (fs.existsSync(filePath)) {
+                try { fs.unlinkSync(filePath); } catch (e) { console.warn('Failed to delete file:', e); }
+            }
+        }
+        res.status(200).json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete video' });
+    }
+});
+
+// Music Delete API
+app.delete('/api/music/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const song = db.prepare('SELECT * FROM songs WHERE id = ?').get(id);
+        if (!song) return res.status(404).json({ error: 'Song not found' });
+
+        db.prepare('DELETE FROM songs WHERE id = ?').run(id);
+
+        const filePath = path.join(uploadsDir, song.filename);
+        if (fs.existsSync(filePath)) {
+            try { fs.unlinkSync(filePath); } catch (e) { console.warn('Failed to delete file:', e); }
+        }
+        res.status(200).json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete song' });
+    }
+});
+
+// Content API
+app.get('/api/content', (req, res) => {
+    try {
+        const content = db.prepare('SELECT * FROM content').all();
+        // Return as object { key: value } for easier frontend consumption
+        const contentMap = content.reduce((acc, curr) => {
+            acc[curr.key] = curr.value;
+            return acc;
+        }, {});
+        res.status(200).json(contentMap);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch content' });
+    }
+});
+
+app.post('/api/content', (req, res) => {
+    try {
+        const { key, value } = req.body;
+        if (!key) return res.status(400).json({ error: 'Key is required' });
+
+        const stmt = db.prepare(`
+            INSERT INTO content (key, value, last_updated) 
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(key) DO UPDATE SET
+            value = excluded.value,
+            last_updated = CURRENT_TIMESTAMP
+        `);
+
+        stmt.run(key, value);
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Error saving content:', err);
+        res.status(500).json({ error: 'Failed to save content' });
+    }
+});
+// Analytics API
+app.get('/api/analytics', (req, res) => {
+    try {
+        // Total views
+        const totalViews = db.prepare('SELECT COUNT(*) as count FROM visits').get().count;
+
+        // Unique visitors (approx based on IP)
+        const uniqueVisitors = db.prepare('SELECT COUNT(DISTINCT ip_hash) as count FROM visits').get().count;
+
+        // Last 7 days traffic
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+        const dateStr = sevenDaysAgo.toISOString().split('T')[0];
+
+        const trafficData = db.prepare(`
+            SELECT strftime('%Y-%m-%d', timestamp) as date, COUNT(*) as count 
+            FROM visits 
+            WHERE timestamp >= ? 
+            GROUP BY date 
+            ORDER BY date ASC
+        `).all(dateStr);
+
+        // Fill in missing days
+        const chartData = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            const dayStr = d.toISOString().split('T')[0];
+            const found = trafficData.find(r => r.date === dayStr);
+            chartData.push({
+                date: dayStr,
+                visits: found ? found.count : 0
+            });
+        }
+
+        // Top Pages
+        const topPages = db.prepare(`
+            SELECT page, COUNT(*) as count 
+            FROM visits 
+            GROUP BY page 
+            ORDER BY count DESC 
+            LIMIT 5
+        `).all();
+
+        res.status(200).json({
+            overview: { totalViews, uniqueVisitors },
+            traffic: chartData,
+            pages: topPages
+        });
+
+    } catch (err) {
+        console.error('Analytics error:', err);
+        res.status(500).json({ error: 'Failed to fetch analytics' });
     }
 });
 
