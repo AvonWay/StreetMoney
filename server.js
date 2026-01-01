@@ -76,7 +76,7 @@ const pictureStorage = multer.diskStorage({
 
 const uploadMusic = multer({
     storage: musicStorage,
-    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('audio/')) cb(null, true);
         else cb(new Error('Only audio files are allowed!'), false);
@@ -160,19 +160,32 @@ app.get('/api/music', (req, res) => {
     }
 });
 
-app.post('/api/music/upload', uploadMusic.single('song'), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+app.post('/api/music/upload', (req, res) => {
+    uploadMusic.single('song')(req, res, (err) => {
+        if (err) {
+            console.error('Multer Music Upload Error:', err);
+            return res.status(400).json({ error: err.message });
+        }
 
-    try {
-        const name = req.file.originalname.replace('.mp3', '');
-        const filename = req.file.filename;
-        const url = `/uploads/${filename}`;
+        if (!req.file) {
+            console.error('No music file in request');
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
 
-        const info = db.prepare('INSERT INTO songs (name, filename, url) VALUES (?, ?, ?)').run(name, filename, url);
-        res.status(200).json({ success: true, id: info.lastInsertRowid, file: filename });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to save song to database' });
-    }
+        try {
+            console.log('Processing music upload:', req.file.originalname);
+            const name = req.file.originalname.replace(/\.(mp3|wav|m4a)$/i, '');
+            const filename = req.file.filename;
+            const url = `/uploads/${filename}`;
+
+            const info = db.prepare('INSERT INTO songs (name, filename, url) VALUES (?, ?, ?)').run(name, filename, url);
+            console.log('Song saved to DB:', info.lastInsertRowid);
+            res.status(200).json({ success: true, id: info.lastInsertRowid, file: filename });
+        } catch (dbErr) {
+            console.error('Database Error during music upload:', dbErr);
+            res.status(500).json({ error: 'Failed to save song to database' });
+        }
+    });
 });
 
 // Video API
@@ -449,7 +462,7 @@ app.get('*', (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'File too large. Max limit is 500MB for videos and 20MB for music.' });
+            return res.status(400).json({ error: 'File too large. Max limit is 500MB for videos and 100MB for music.' });
         }
         return res.status(400).json({ error: err.message });
     } else if (err) {
