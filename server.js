@@ -85,7 +85,7 @@ const uploadMusic = multer({
 
 const uploadVideo = multer({
     storage: videoStorage,
-    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
+    limits: { fileSize: 500 * 1024 * 1024 }, // 500MB limit
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('video/')) cb(null, true);
         else cb(new Error('Only video files are allowed!'), false);
@@ -185,19 +185,32 @@ app.get('/api/videos', (req, res) => {
     }
 });
 
-app.post('/api/videos/upload', uploadVideo.single('video'), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No video uploaded' });
+app.post('/api/videos/upload', (req, res) => {
+    uploadVideo.single('video')(req, res, (err) => {
+        if (err) {
+            console.error('Multer Video Upload Error:', err);
+            return res.status(400).json({ error: err.message });
+        }
 
-    try {
-        const name = req.file.originalname.replace(/\.(mp4|mov|webm)$/i, '');
-        const filename = req.file.filename;
-        const url = `/videos/${filename}`;
+        if (!req.file) {
+            console.error('No video file in request');
+            return res.status(400).json({ error: 'No video uploaded' });
+        }
 
-        const info = db.prepare('INSERT INTO videos (name, filename, url, video_type) VALUES (?, ?, ?, ?)').run(name, filename, url, 'upload');
-        res.status(200).json({ success: true, id: info.lastInsertRowid, file: filename });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to save video to database' });
-    }
+        try {
+            console.log('Processing video upload:', req.file.originalname);
+            const name = req.file.originalname.replace(/\.(mp4|mov|webm)$/i, '');
+            const filename = req.file.filename;
+            const url = `/videos/${filename}`;
+
+            const info = db.prepare('INSERT INTO videos (name, filename, url, video_type) VALUES (?, ?, ?, ?)').run(name, filename, url, 'upload');
+            console.log('Video saved to DB:', info.lastInsertRowid);
+            res.status(200).json({ success: true, id: info.lastInsertRowid, file: filename });
+        } catch (dbErr) {
+            console.error('Database Error during video upload:', dbErr);
+            res.status(500).json({ error: 'Failed to save video to database' });
+        }
+    });
 });
 
 // Add video via URL (YouTube, etc.)
@@ -436,7 +449,7 @@ app.get('*', (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'File too large. Max limit is 100MB for videos and 20MB for music.' });
+            return res.status(400).json({ error: 'File too large. Max limit is 500MB for videos and 20MB for music.' });
         }
         return res.status(400).json({ error: err.message });
     } else if (err) {

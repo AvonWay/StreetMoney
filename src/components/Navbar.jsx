@@ -16,12 +16,12 @@ const Navbar = () => {
     }, []);
 
     const navLinks = [
-        { title: 'Home', href: '#home' },
-        { title: 'About', href: '#about' },
-        { title: 'Videos', href: '#videos' },
-        { title: 'Events', href: '#events' },
-        { title: 'Music', href: '#music' },
-        { title: 'Contact', href: '#contact' },
+        { title: 'Home', href: '/#home' },
+        { title: 'About', href: '/#about' },
+        { title: 'Videos', href: '/#videos' },
+        { title: 'Events', href: '/#events' },
+        { title: 'Music', href: '/#music' },
+        { title: 'Contact', href: '/#contact' },
         { title: 'Gloves Up', href: '/gloves-up', isRoute: true },
         { title: 'Dashboard', href: '/admin', isRoute: true },
     ];

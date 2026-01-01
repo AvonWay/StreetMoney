@@ -30,8 +30,8 @@ function App() {
           </div>
         } />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/bio" element={<Bio />} />
-        <Route path="/gloves-up" element={<GlovesUp />} />
+        <Route path="/bio" element={<><Navbar /><Bio /><Footer /></>} />
+        <Route path="/gloves-up" element={<><Navbar /><GlovesUp /><Footer /></>} />
       </Routes>
     </Router>
   );

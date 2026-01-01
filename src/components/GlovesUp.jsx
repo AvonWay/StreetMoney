@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import SignUpModal from './SignUpModal';
 
 const GlovesUp = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     return (
         <div className="pt-20 min-h-screen bg-white">
+            <SignUpModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
             {/* Hero Section */}
             <section className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden">
                 <div className="absolute inset-0">
@@ -94,7 +100,10 @@ const GlovesUp = () => {
                                 </p>
                             </div>
 
-                            <button className="px-10 py-4 bg-gray-900 text-white font-heading font-black uppercase tracking-widest rounded-xl hover:bg-gold-600 transition-colors shadow-lg">
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="px-10 py-4 bg-gray-900 text-white font-heading font-black uppercase tracking-widest rounded-xl hover:bg-gold-600 transition-colors shadow-lg"
+                            >
                                 Join The Movement
                             </button>
                         </motion.div>
