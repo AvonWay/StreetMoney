@@ -31,7 +31,7 @@ const GlovesUp = () => {
                         <img
                             src="/assets/gugd/logo.jpg"
                             alt="Gloves Up Logo"
-                            className="w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-gold-500 shadow-[0_0_30px_rgba(234,179,8,0.3)] object-cover"
+                            className="w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-gold-500 shadow-[0_0_30px_rgba(234,179,8,0.3)] object-cover max-w-full"
                         />
                     </motion.div>
 
@@ -69,7 +69,7 @@ const GlovesUp = () => {
                             <img
                                 src="/assets/gugd/action.jpg"
                                 alt="Training Session"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover max-w-full"
                             />
                             <div className="absolute inset-0 bg-gold-500/10 mix-blend-overlay"></div>
                         </motion.div>

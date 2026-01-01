@@ -574,8 +574,8 @@ const AdminDashboard = () => {
                                     {activeTab === 'pictures' ? (
                                         <div className="grid grid-cols-2 gap-4">
                                             {pictures.map(pic => (
-                                                <div key={pic.id} className="relative group rounded-xl overflow-hidden border border-gray-100">
-                                                    <img src={pic.url} alt={pic.name} className="w-full h-32 object-cover" />
+                                                <div key={pic.id} className="relative group rounded-xl overflow-hidden border border-gray-100 aspect-square">
+                                                    <img src={pic.url} alt={pic.name} className="w-full h-full object-cover" />
                                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <a href={pic.url} target="_blank" rel="noreferrer" className="p-2 bg-white rounded-full text-gray-900 hover:text-gold-600">
                                                             <FaDownload size={14} />
