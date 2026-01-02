@@ -7,17 +7,8 @@ const Bio = () => {
     return (
         <div className="min-h-screen bg-white">
             {/* Header with Back Button */}
-            <div className="bg-gray-900 text-white py-6 sticky top-0 z-50 border-b border-gold-500/20">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-3 text-gold-400 hover:text-gold-300 transition-colors">
-                        <FaArrowLeft />
-                        <span className="font-heading font-bold uppercase tracking-wider">Back to Home</span>
-                    </Link>
-                    <h1 className="text-2xl font-heading font-black uppercase tracking-tighter">
-                        Street<span className="text-gold-500">Money</span>
-                    </h1>
-                </div>
-            </div>
+            {/* Header Removed - Using Global Navbar */}
+            <div className="pt-20"></div>
 
             {/* Hero Section */}
             <section className="relative py-20 bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden">

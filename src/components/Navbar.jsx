@@ -66,7 +66,7 @@ const Navbar = () => {
                     <div className="md:hidden z-50">
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="text-gray-900 hover:text-gold-600 focus:outline-none p-2 transition-colors"
+                            className="text-gray-900 bg-white/90 hover:bg-white hover:text-gold-600 focus:outline-none p-2 rounded-lg shadow-md transition-all backdrop-blur-sm"
                         >
                             {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
                         </button>
