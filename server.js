@@ -18,8 +18,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Ensure uploads directories exist
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-const videosDir = path.join(process.cwd(), 'public', 'videos');
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+const videosDir = path.join(__dirname, 'public', 'videos');
 [uploadsDir, videosDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -126,10 +126,10 @@ app.use(cors());
 app.use(express.json());
 
 // Resolve dist path relative to current working directory (safer)
-const distPath = path.join(process.cwd(), 'dist');
+const distPath = path.join(__dirname, 'dist');
 
 console.log('Starting server...');
-console.log('Current working directory:', process.cwd());
+console.log('Current directory:', __dirname);
 console.log('Dist path:', distPath);
 
 if (!fs.existsSync(distPath)) {
