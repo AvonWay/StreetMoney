@@ -1,0 +1,71 @@
+--- public_html ---
+[
+  {
+    "name": "public_html",
+    "type": 2,
+    "size": 0,
+    "rawModifiedAt": "2026-01-23T21:17:29.000Z",
+    "modifiedAt": "2026-01-23T21:17:29.000Z",
+    "permissions": {
+      "user": 7,
+      "group": 5,
+      "world": 5
+    },
+    "group": "o1008551310",
+    "user": "u234209809",
+    "uniqueID": "804U12CF8067"
+  },
+  {
+    "name": "public",
+    "type": 2,
+    "size": 0,
+    "rawModifiedAt": "2026-01-23T21:22:49.000Z",
+    "modifiedAt": "2026-01-23T21:22:49.000Z",
+    "permissions": {
+      "user": 7,
+      "group": 5,
+      "world": 5
+    },
+    "group": "o1008551310",
+    "user": "u234209809",
+    "uniqueID": "804U12E1272D"
+  },
+  {
+    "name": "test.txt",
+    "type": 1,
+    "size": 15,
+    "rawModifiedAt": "2026-01-23T21:18:55.000Z",
+    "modifiedAt": "2026-01-23T21:18:55.000Z",
+    "permissions": {
+      "user": 6,
+      "group": 4,
+      "world": 4
+    },
+    "group": "o1008551310",
+    "user": "u234209809",
+    "uniqueID": "804U123ACDFB"
+  }
+]
+
+--- public_html/public ---
+[
+  {
+    "name": "data",
+    "type": 2,
+    "size": 0,
+    "rawModifiedAt": "2026-01-23T21:22:49.000Z",
+    "modifiedAt": "2026-01-23T21:22:49.000Z",
+    "permissions": {
+      "user": 7,
+      "group": 5,
+      "world": 5
+    },
+    "group": "o1008551310",
+    "user": "u234209809",
+    "uniqueID": "804U12E1272E"
+  }
+]
+
+--- public_html/public/data ---
+[]
+

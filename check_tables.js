@@ -15,7 +15,7 @@ async function checkTable(table) {
     } catch (e) { console.log(e); }
 }
 
-const tables = ['songs', 'videos', 'media', 'music', 'content'];
+const tables = ['songs', 'videos', 'media', 'music', 'content', 'pictures'];
 
 (async () => {
     for (const t of tables) await checkTable(t);

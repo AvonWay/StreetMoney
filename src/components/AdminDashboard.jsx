@@ -171,7 +171,7 @@ const AdminDashboard = () => {
                 record.video_url = publicUrl;
                 record.video_type = 'upload';
             } else if (activeTab === 'music') {
-                record.url = publicUrl; // Assuming 'songs' table uses 'url'
+                record.song_url = publicUrl; // using 'song_url' as confirmed by schema
             } else if (activeTab === 'pictures') {
                 record.url = publicUrl; // Assuming 'pictures' uses 'url'
                 record.filename = file.name; // Pictures might need filename
