@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 
@@ -20,15 +21,17 @@ const SignUpModal = ({ isOpen, onClose }) => {
         setStatus('Sending...');
 
         try {
-            const response = await fetch('/api/contact', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+            const { error } = await supabase
+                .from('messages')
+                .insert([{
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    type: formData.type,
+                    created_at: new Date()
+                }]);
 
-            if (response.ok) {
+            if (!error) {
                 setStatus('Registration Complete! See you in the ring.');
                 setTimeout(() => {
                     onClose();
@@ -36,6 +39,7 @@ const SignUpModal = ({ isOpen, onClose }) => {
                     setFormData({ name: '', email: '', phone: '', type: 'Gloves Up Registration' });
                 }, 2000);
             } else {
+                console.error('Supabase Error:', error);
                 setStatus('Failed to register. Please try again.');
             }
         } catch (error) {

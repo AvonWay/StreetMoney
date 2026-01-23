@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | StreetMoneyMan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Admin<span>Panel</span></div>
+        <nav>
+            <a href="index.html">Back to Site</a>
+            <a href="#" id="logout-btn" style="display:none;">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Login Section -->
+        <div id="auth-section" class="login-container">
+            <h2 style="margin-bottom: 2rem;">Admin Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Sign In</button>
+            </form>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" style="display: none;">
+            <section>
+                <h1 class="section-title">Manage Content</h1>
+
+                <div class="grid">
+                    <!-- Add Product -->
+                    <div class="card" style="padding: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem;">Add Product</h3>
+                        <form id="product-form">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="p-title" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Price</label>
+                                <input type="number" id="p-price" class="form-input" step="0.01" required>
+                            </div>
+                            <!-- CHANGED: File Input -->
+                            <div class="form-group">
+                                <label>Image (Upload)</label>
+                                <input type="file" id="p-img-file" class="form-input" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>Stripe Link</label>
+                                <input type="url" id="p-stripe" class="form-input"
+                                    placeholder="https://buy.stripe.com/...">
+                            </div>
+                            <button type="submit" class="btn">Add Product</button>
+                        </form>
+                    </div>
+
+                    <!-- Add Media -->
+                    <div class="card" style="padding: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem;">Add Music / Video</h3>
+                        <form id="media-form">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="m-title" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select id="m-type" class="form-input">
+                                    <option value="music">Music</option>
+                                    <option value="video">Video</option>
+                                </select>
+                            </div>
+                            <!-- CHANGED: File Input -->
+                            <div class="form-group">
+                                <label>File (Upload)</label>
+                                <input type="file" id="m-file" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Cover Art (Upload)</label>
+                                <input type="file" id="m-cover-file" class="form-input" accept="image/*">
+                            </div>
+                            <button type="submit" class="btn">Add Media</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://tlzasuzpxrcphoxojwvk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsemFzdXpweHJjcGhveG9qd3ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNTg5MDUsImV4cCI6MjA4MzYzNDkwNX0.-GVcPXaaFiecgZCee_HfXlNlvWIvH5YF825bChXoQos';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const authSection = document.getElementById('auth-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Check Session
+        async function checkUser() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                // Check if admin (optional, assuming 'role' in profiles)
+                // const { data: profile } = await supabase
+                //     .from('profiles')
+                //     .select('role')
+                //     .eq('id', session.user.id)
+                //     .single();
+
+                // For now, just allow logged in users, or check profile.role === 'admin'
+                authSection.style.display = 'none';
+                dashboardSection.style.display = 'block';
+                logoutBtn.style.display = 'inline-block';
+            } else {
+                authSection.style.display = 'block';
+                dashboardSection.style.display = 'none';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        checkUser();
+
+        // Login
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) alert(error.message);
+            else checkUser();
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            checkUser();
+        });
+
+        // Helper: Upload File to Storage
+        async function uploadFile(file, bucket) {
+            if (!file) return null;
+            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+
+            alert(`Uploading ${file.name}... Please wait.`);
+            const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
+
+            if (error) {
+                console.error('Upload error:', error);
+                throw error;
+            }
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
+            return publicUrl;
+        }
+
+        // Add Product
+        document.getElementById('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const title = document.getElementById('p-title').value;
+                const price = document.getElementById('p-price').value;
+                const stripe_link = document.getElementById('p-stripe').value;
+
+                const imgFile = document.getElementById('p-img-file').files[0];
+                let image_url = null;
+                if (imgFile) image_url = await uploadFile(imgFile, 'products');
+
+                const { error } = await supabase.from('products').insert({ title, price, image_url, stripe_link });
+                if (error) throw error;
+
+                alert('Product added successfully!');
+                e.target.reset();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+
+        // Add Media
+        document.getElementById('media-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const title = document.getElementById('m-title').value;
+                const type = document.getElementById('m-type').value;
+
+                const mediaFile = document.getElementById('m-file').files[0];
+                const coverFile = document.getElementById('m-cover-file').files[0];
+
+                if (!mediaFile) return alert('Please select a media file to upload.');
+
+                // Upload files
+                const file_url = await uploadFile(mediaFile, 'media');
+                let cover_art_url = null;
+                if (coverFile) cover_art_url = await uploadFile(coverFile, 'media'); // Putting covers in media bucket too for simplicity
+
+                const { error } = await supabase.from('media').insert({ title, type, file_url, cover_art_url });
+                if (error) throw error;
+
+                alert('Media added successfully!');
+                e.target.reset();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

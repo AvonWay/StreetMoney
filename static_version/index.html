@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreetMoneyMan | Official Site</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">StreetMoney<span>Man</span></div>
+        <nav>
+            <a href="#music">Music</a>
+            <a href="#products">Merch</a>
+            <a href="#videos">Videos</a>
+            <a href="admin.html">Admin</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Create. Hustle.<br>Ascend.</h1>
+            <p>The official hub for StreetMoneyMan music, merchandise, and exclusive content.</p>
+            <a href="#products" class="btn">Shop Latest Drop</a>
+        </section>
+
+        <section id="music">
+            <h2 class="section-title">Latest Music</h2>
+            <div class="grid" id="music-grid">
+                <!-- Music cards loaded by JS -->
+                <div class="card skeleton">Loading...</div>
+            </div>
+        </section>
+
+        <section id="products">
+            <h2 class="section-title">Official Merch</h2>
+            <div class="grid" id="products-grid">
+                <!-- Product cards loaded by JS -->
+            </div>
+        </section>
+
+        <section id="videos">
+            <h2 class="section-title">Videos</h2>
+            <div class="grid" id="videos-grid">
+                <!-- Video cards loaded by JS -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 StreetMoneyMan. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // CLIENT: Please replace this with your actual Supabase Anon Key
+        // You can find it in Supabase Dashboard -> Project Settings -> API
+        const SUPABASE_URL = 'https://tlzasuzpxrcphoxojwvk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsemFzdXpweHJjcGhveG9qd3ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNTg5MDUsImV4cCI6MjA4MzYzNDkwNX0.-GVcPXaaFiecgZCee_HfXlNlvWIvH5YF825bChXoQos';
+
+        if (SUPABASE_KEY === 'INSERT_YOUR_SUPABASE_ANON_KEY_HERE') {
+            console.error('Supabase Key is missing! Site will not load data.');
+            alert('Setup Error: Supabase Key missing in index.html');
+        }
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function fetchContent() {
+            // 1. Fetch Products
+            const { data: products, error: prodErr } = await supabase
+                .from('products')
+                .select('*')
+                .eq('is_active', true);
+
+            if (products) {
+                const container = document.getElementById('products-grid');
+                container.innerHTML = products.map(p => `
+                    <div class="card">
+                        <div class="card-img-container">
+                            <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.title}" class="card-img">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">${p.title}</h3>
+                            <span class="card-price">$${p.price}</span>
+                            <br>
+                            <a href="${p.stripe_link || '#'}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem; display:inline-block;">Buy Now</a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Fetch Media (Music/Videos split by type if possible, or just all in one)
+            // Assuming 'type' column distinguishes.
+            const { data: media, error: mediaErr } = await supabase
+                .from('media')
+                .select('*');
+
+            if (media) {
+                const musicContainer = document.getElementById('music-grid');
+                const videoContainer = document.getElementById('videos-grid');
+
+                musicContainer.innerHTML = '';
+                videoContainer.innerHTML = '';
+
+                media.forEach(m => {
+                    const card = `
+                        <div class="card">
+                            <div class="card-img-container">
+                                <img src="${m.cover_art_url || 'https://via.placeholder.com/300'}" alt="${m.title}" class="card-img">
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">${m.title}</h3>
+                                <div class="card-meta">${m.type || 'Media'}</div>
+                                <a href="${m.file_url}" target="_blank" class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Play / Download</a>
+                            </div>
+                        </div>
+                    `;
+
+                    if (m.type === 'video') {
+                        videoContainer.innerHTML += card;
+                    } else {
+                        musicContainer.innerHTML += card;
+                    }
+                });
+            }
+        }
+
+        fetchContent();
+    </script>
+</body>
+
+</html>

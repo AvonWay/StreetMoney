@@ -11,12 +11,15 @@ const GlovesUp = () => {
             <SignUpModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
             {/* Hero Section */}
-            <section className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden">
+            <section className="relative min-h-screen w-full overflow-hidden">
                 <div className="absolute inset-0">
-                    <img
-                        src="/assets/gugd/action.jpg"
-                        alt="Gloves Up Guns Down Action"
+                    <video
+                        src="/assets/gugd/hero.mp4"
                         className="w-full h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
                     />
                     <div className="absolute inset-0 bg-black/60"></div>
                 </div>

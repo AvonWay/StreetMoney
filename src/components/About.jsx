@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabase';
 import { motion } from 'framer-motion';
 
 const About = () => {
     const [content, setContent] = useState({});
 
     useEffect(() => {
-        fetch('/api/content')
-            .then(res => res.json())
-            .then(data => setContent(data))
-            .catch(err => console.error(err));
+        const fetchContent = async () => {
+            const { data, error } = await supabase.from('content').select('*');
+            if (data) {
+                const contentMap = data.reduce((acc, curr) => {
+                    acc[curr.key] = curr.value;
+                    return acc;
+                }, {});
+                setContent(contentMap);
+            }
+        };
+        fetchContent();
     }, []);
 
     return (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../supabase';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FaSpotify, FaApple, FaYoutube, FaSoundcloud, FaPlay, FaPause, FaDownload } from 'react-icons/fa';
@@ -15,11 +16,12 @@ const Music = () => {
 
     const fetchSongs = async () => {
         try {
-            const response = await fetch('/api/music');
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
+            const response = await fetch('/data/music.json');
+            if (response.ok) {
                 const data = await response.json();
-                setSongs(data);
+                setSongs(data || []);
+            } else {
+                console.error('Failed to load music data');
             }
         } catch (error) {
             console.error('Error fetching songs:', error);

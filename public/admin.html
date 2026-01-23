@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | StreetMoneyMan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Simple loader styles */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Admin<span>Panel</span></div>
+        <nav>
+            <a href="/">Back to Site</a>
+            <a href="#" id="logout-btn" style="display:none;">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Login Section -->
+        <div id="auth-section" class="login-container">
+            <h2 style="margin-bottom: 2rem;">Admin Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Sign In</button>
+            </form>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" style="display: none;">
+            <section>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 class="section-title" style="margin-bottom: 0;">Manage Content</h1>
+                </div>
+
+                <div class="grid">
+                    <!-- Add Product -->
+                    <div class="card" style="padding: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem;">Add Product</h3>
+                        <form id="product-form">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="p-title" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Price</label>
+                                <input type="number" id="p-price" class="form-input" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Image (Upload)</label>
+                                <input type="file" id="p-img-file" class="form-input" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>Stripe Link</label>
+                                <input type="url" id="p-stripe" class="form-input"
+                                    placeholder="https://buy.stripe.com/...">
+                            </div>
+                            <button type="submit" class="btn">Add Product</button>
+                        </form>
+                    </div>
+
+                    <!-- Add Media -->
+                    <div class="card" style="padding: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem;">Add Music / Video</h3>
+                        <form id="media-form">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="m-title" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select id="m-type" class="form-input">
+                                    <option value="music">Music</option>
+                                    <option value="video">Video</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>File (Upload)</label>
+                                <input type="file" id="m-file" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Cover Art (Upload)</label>
+                                <input type="file" id="m-cover-file" class="form-input" accept="image/*">
+                            </div>
+                            <button type="submit" class="btn">Add Media</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="loader" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p id="loader-text" style="font-size: 1.2rem; font-weight: bold; margin-top: 1rem;">Uploading...</p>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://tlzasuzpxrcphoxojwvk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsemFzdXpweHJjcGhveG9qd3ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNTg5MDUsImV4cCI6MjA4MzYzNDkwNX0.-GVcPXaaFiecgZCee_HfXlNlvWIvH5YF825bChXoQos';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const authSection = document.getElementById('auth-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loader = document.getElementById('loader');
+        const loaderText = document.getElementById('loader-text');
+
+        function showLoader(text) {
+            loaderText.innerText = text;
+            loader.style.display = 'flex';
+        }
+
+        function hideLoader() {
+            loader.style.display = 'none';
+        }
+
+        // Check Session
+        async function checkUser() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                authSection.style.display = 'none';
+                dashboardSection.style.display = 'block';
+                logoutBtn.style.display = 'inline-block';
+            } else {
+                authSection.style.display = 'block';
+                dashboardSection.style.display = 'none';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        checkUser();
+
+        // Login
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) alert(error.message);
+            else checkUser();
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            checkUser();
+        });
+
+        // Helper: Upload File to Storage
+        async function uploadFile(file, bucket) {
+            if (!file) return null;
+            // Clean filename to prevent chars issues
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '');
+            const fileName = `${Date.now()}-${cleanName}`;
+
+            const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
+
+            if (error) {
+                console.error('Storage Upload error:', error);
+                throw error;
+            }
+
+            const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
+            return publicUrl;
+        }
+
+        // Add Product
+        document.getElementById('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoader('Uploading Product Image...');
+            try {
+                const title = document.getElementById('p-title').value;
+                const price = document.getElementById('p-price').value;
+                const stripe_link = document.getElementById('p-stripe').value;
+
+                const imgFile = document.getElementById('p-img-file').files[0];
+                let image_url = null;
+                if (imgFile) image_url = await uploadFile(imgFile, 'products');
+
+                showLoader('Saving Product to Database...');
+                const { error } = await supabase.from('products').insert({ title, price, image_url, stripe_link });
+                if (error) throw error;
+
+                alert('Product added successfully!');
+                e.target.reset();
+            } catch (err) {
+                console.error(err);
+                alert('Error: ' + err.message);
+            } finally {
+                hideLoader();
+            }
+        });
+
+        // Add Media (Music or Video)
+        document.getElementById('media-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            try {
+                const title = document.getElementById('m-title').value;
+                const type = document.getElementById('m-type').value; // 'music' or 'video'
+                const mediaFile = document.getElementById('m-file').files[0];
+                const coverFile = document.getElementById('m-cover-file').files[0];
+
+                if (!mediaFile) return alert('Please select a media file to upload.');
+
+                // Determine buckets/tables based on type
+                // User said: use supabase.from('videos').insert(...) 
+                // So if type is video, we use 'videos' table. If type is music, 'songs' table.
+
+                const table = type === 'video' ? 'videos' : 'songs';
+                const bucket = 'media'; // Assuming a generic media bucket, or could be separate. Usually 'media' covers both.
+
+                showLoader(`Uploading ${type} file... (This may take a while)`);
+                const file_url = await uploadFile(mediaFile, bucket);
+
+                let cover_art_url = null;
+                if (coverFile) {
+                    showLoader('Uploading Cover Art...');
+                    cover_art_url = await uploadFile(coverFile, bucket);
+                }
+
+                showLoader('Saving to Database...');
+
+                // Construct object based on table schema
+                // Videos expected: name, url, video_type
+                // Songs expected: name, url, filename?
+
+                const record = {
+                    name: title,
+                    url: file_url,
+                    created_at: new Date()
+                };
+
+                if (type === 'video') {
+                    record.video_type = 'upload';
+                }
+
+                // Try to insert. Note: 'filename' column might be required by legacy schema, but 'url' is what we use.
+                // We'll insert just what's needed.
+                const { error } = await supabase.from(table).insert(record);
+
+                if (error) throw error;
+
+                alert(`${type.charAt(0).toUpperCase() + type.slice(1)} added successfully!`);
+                e.target.reset();
+            } catch (err) {
+                console.error(err);
+                alert('Error: ' + err.message);
+            } finally {
+                hideLoader();
+            }
+        });
+    </script>
+</body>
+
+</html>

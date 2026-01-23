@@ -22,7 +22,7 @@ Thumbs.db
 .idea/
 
 # Local Public Uploads (Optional: keep if you want them on GitHub, ignore if you want them local/managed via dashboard)
-public/uploads/*
-public/videos/*
+# public/uploads/*
+# public/videos/*
 !public/uploads/.gitkeep
 !public/videos/.gitkeep

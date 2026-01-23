@@ -12,6 +12,8 @@
     "server": "nodemon server.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.90.1",
+    "basic-ftp": "^5.1.0",
     "better-sqlite3": "^12.5.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
