@@ -21,8 +21,17 @@ async function deploy() {
         console.log("Connected! Uploading dist to public_html...");
 
         // Upload everything from static_version to public_html
-        await client.ensureDir("public_html");
-        await client.clearWorkingDir(); // Careful: This deletes everything in public_html first!
+        // Check current directory
+        console.log("Current remote directory: " + await client.pwd());
+
+        // Ensure we are in public_html
+        await client.cd("/");
+        await client.cd("public_html");
+        console.log("Changed to public_html. Current directory: " + await client.pwd());
+
+        console.log("Clearing remote directory...");
+        await client.clearWorkingDir();
+
 
         await client.uploadFromDir(path.join(__dirname, "dist"), "public_html");
 

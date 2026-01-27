@@ -58,7 +58,9 @@ const VideoPlayer = ({ video, index }) => {
                             muted={isMuted}
                             defaultMuted={true}
                             loop
-                            playsInline
+                            playsInline={true}
+                            webkit-playsinline="true"
+                            x5-playsinline="true"
                             onLoadedMetadata={() => {
                                 if (videoRef.current) {
                                     videoRef.current.muted = true; // Force mute for autoplay policy

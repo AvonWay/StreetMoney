@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import eventAd1 from '../assets/event-ad-1.jpg';
+import eventAd2 from '../assets/event-ad-2.jpg';
+import eventAd3 from '../assets/event-ad-3.jpg';
+import eventAd4 from '../assets/event-ad-4.jpg';
 
 const Events = () => {
     const [selectedId, setSelectedId] = useState(null);
 
     const flyers = [
-        { id: 1, title: 'Lindsey vs Tucker', date: 'March 13', image: '/assets/event-ad-1.jpg', info: 'Gloves Up Guns Down 609 - Main Event' },
-        { id: 2, title: 'Miller vs Ray Ray', date: 'March 13', image: '/assets/event-ad-2.jpg', info: 'Heavyweight Clash' },
-        { id: 3, title: 'Smith vs Wooski', date: 'March 13', image: '/assets/event-ad-3.jpg', info: 'Undercard Battle' },
-        { id: 4, title: 'Vendors Wanted', date: 'Register Now', image: '/assets/event-ad-4.jpg', info: 'Join the Movement - Powered by Free Society' }
+        { id: 1, title: 'Lindsey vs Tucker', date: 'March 13', image: eventAd1, info: 'Gloves Up Guns Down 609 - Main Event' },
+        { id: 2, title: 'Miller vs Ray Ray', date: 'March 13', image: eventAd2, info: 'Heavyweight Clash' },
+        { id: 3, title: 'Smith vs Wooski', date: 'March 13', image: eventAd3, info: 'Undercard Battle' },
+        { id: 4, title: 'Vendors Wanted', date: 'Register Now', image: eventAd4, info: 'Join the Movement - Powered by Free Society' }
     ];
 
     return (
