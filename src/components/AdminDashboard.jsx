@@ -171,7 +171,7 @@ const AdminDashboard = () => {
                 record.video_url = publicUrl;
                 record.video_type = 'upload';
             } else if (activeTab === 'music') {
-                record.song_url = publicUrl; // using 'song_url' as confirmed by schema
+                record.url = publicUrl; // Standardized to 'url'
             } else if (activeTab === 'pictures') {
                 record.url = publicUrl; // Assuming 'pictures' uses 'url'
                 record.filename = file.name; // Pictures might need filename
@@ -333,7 +333,7 @@ const AdminDashboard = () => {
             <div className="flex-1 p-12 overflow-y-auto">
                 <div className="flex justify-between items-center mb-12">
                     <div>
-                        <h1 className="text-4xl font-heading font-black text-gray-900 uppercase">Dashboard</h1>
+                        <h1 className="text-4xl font-heading font-black text-gray-900 uppercase">Dashboard (v1.1)</h1>
                         <p className="text-gray-500">Content Overview & Music Management</p>
                     </div>
                 </div>

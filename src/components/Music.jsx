@@ -16,13 +16,13 @@ const Music = () => {
 
     const fetchSongs = async () => {
         try {
-            const response = await fetch('/data/music.json');
-            if (response.ok) {
-                const data = await response.json();
-                setSongs(data || []);
-            } else {
-                console.error('Failed to load music data');
-            }
+            const { data, error } = await supabase
+                .from('songs')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setSongs(data || []);
         } catch (error) {
             console.error('Error fetching songs:', error);
         }

@@ -5,8 +5,10 @@ const Events = () => {
     const [selectedId, setSelectedId] = useState(null);
 
     const flyers = [
-        { id: 1, title: 'Knockout Party', date: 'Dec 19', image: '/assets/fight-card-updated.jpg', info: 'Gillie & Wallo\'s Knockout Party' },
-        { id: 2, title: 'DK vs StreetMoney', date: 'Main Event', image: '/assets/face-off.png', info: 'Official Watch Party' }
+        { id: 1, title: 'Lindsey vs Tucker', date: 'March 13', image: '/assets/event-ad-1.jpg', info: 'Gloves Up Guns Down 609 - Main Event' },
+        { id: 2, title: 'Miller vs Ray Ray', date: 'March 13', image: '/assets/event-ad-2.jpg', info: 'Heavyweight Clash' },
+        { id: 3, title: 'Smith vs Wooski', date: 'March 13', image: '/assets/event-ad-3.jpg', info: 'Undercard Battle' },
+        { id: 4, title: 'Vendors Wanted', date: 'Register Now', image: '/assets/event-ad-4.jpg', info: 'Join the Movement - Powered by Free Society' }
     ];
 
     return (
@@ -18,17 +20,17 @@ const Events = () => {
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="text-center mb-20"
+                    className="text-center mb-8"
                 >
                     <h2 className="text-5xl md:text-7xl font-heading font-black mb-4 uppercase tracking-tighter">
                         Fight <span className="text-transparent bg-clip-text bg-gradient-to-b from-gold-600 to-gold-400">Night</span>
                     </h2>
                     <p className="text-xl text-gray-500 font-sans max-w-2xl mx-auto">
-                        Witness history. The streets are watching.
+                        Witness the action. Gloves Up, Guns Down.
                     </p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {flyers.map((flyer, index) => (
                         <motion.div
                             key={flyer.id}
@@ -41,7 +43,7 @@ const Events = () => {
                             className="group relative cursor-pointer"
                         >
                             {/* Card Container */}
-                            <div className="relative bg-white rounded-3xl overflow-hidden border border-gray-100 group-hover:border-gold-300 transition-all duration-500 shadow-xl hover:shadow-2xl">
+                            <div className="relative bg-white rounded-3xl overflow-hidden border border-gray-100 group-hover:border-gold-300 transition-all duration-500 shadow-xl hover:shadow-2xl h-full">
                                 {/* Image */}
                                 <div className="aspect-[4/5] overflow-hidden">
                                     <img
@@ -50,20 +52,41 @@ const Events = () => {
                                         className="w-full h-full object-cover transform transition duration-1000 group-hover:scale-110"
                                     />
                                 </div>
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 md:p-10">
-                                    <div className="bg-gold-500 text-black text-[10px] font-black px-2 py-1 inline-block rounded items-center mb-3 uppercase tracking-widest shadow-lg">
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6">
+                                    <div className="bg-gold-500 text-black text-[10px] font-black px-2 py-1 inline-block rounded items-center mb-2 uppercase tracking-widest shadow-lg">
                                         {flyer.date}
                                     </div>
-                                    <h3 className="text-2xl md:text-4xl font-heading font-black mb-1 uppercase text-white tracking-tight">{flyer.title}</h3>
-                                    <p className="text-gold-400 text-xs font-bold uppercase tracking-[0.2em] mb-4 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">{flyer.info}</p>
-                                    <div className="flex items-center gap-2 text-white font-bold uppercase text-xs tracking-[0.3em]">
-                                        Explore <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
+                                    <h3 className="text-lg font-heading font-black mb-1 uppercase text-white tracking-tight leading-tight">{flyer.title}</h3>
+                                    <div className="flex items-center gap-2 text-gold-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-2">
+                                        View <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
                                     </div>
                                 </div>
                             </div>
                         </motion.div>
                     ))}
                 </div>
+
+                {/* Call to Action Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="mt-20 text-center space-y-8 bg-white p-12 rounded-[3rem] shadow-sm border border-gold-100"
+                >
+                    <div className="max-w-2xl mx-auto">
+                        <h3 className="text-3xl font-heading font-black uppercase mb-4">Be Part of the Experience</h3>
+                        <p className="text-gray-500 mb-8">Secure your seats for the main event or register your business to become a vendor.</p>
+
+                        <div className="flex flex-col md:flex-row gap-6 justify-center">
+                            <button className="px-8 py-4 bg-gold-500 text-black font-heading font-black uppercase tracking-widest rounded-xl hover:bg-gold-400 transition-all shadow-lg hover:shadow-gold-500/20 active:scale-95">
+                                Purchase Tickets
+                            </button>
+                            <a href="#contact" className="px-8 py-4 bg-gray-900 text-white font-heading font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
+                                Vendor Registration
+                            </a>
+                        </div>
+                    </div>
+                </motion.div>
             </div>
 
             {/* Lightbox / Expanded View */}
@@ -83,15 +106,15 @@ const Events = () => {
                                 onClick={(e) => e.stopPropagation()}
                                 key={flyer.id}
                             >
-                                <div className="md:w-3/5 h-[40vh] md:h-auto">
-                                    <img src={flyer.image} alt={flyer.title} className="w-full h-full object-cover" />
+                                <div className="md:w-3/5 h-[40vh] md:h-auto bg-black">
+                                    <img src={flyer.image} alt={flyer.title} className="w-full h-full object-contain" />
                                 </div>
                                 <div className="md:w-2/5 p-8 md:p-12 flex flex-col justify-center">
                                     <div className="text-gold-600 font-black text-sm uppercase tracking-widest mb-4">Official Flyer</div>
-                                    <h3 className="text-4xl md:text-6xl font-heading font-black mb-4 uppercase text-gray-900 leading-none">{flyer.title}</h3>
+                                    <h3 className="text-3xl md:text-5xl font-heading font-black mb-4 uppercase text-gray-900 leading-none">{flyer.title}</h3>
                                     <p className="text-gray-500 text-lg mb-10 font-sans">{flyer.info}</p>
-                                    <button className="w-full py-5 bg-gray-900 text-white font-heading font-black text-xl uppercase tracking-widest hover:bg-gold-600 transition-all shadow-xl active:scale-95">
-                                        Secure Tickets
+                                    <button className="w-full py-5 bg-gold-500 text-black font-heading font-black text-xl uppercase tracking-widest hover:bg-gold-400 transition-all shadow-xl active:scale-95 rounded-xl">
+                                        Get Tickets
                                     </button>
                                     <button
                                         className="mt-6 text-gray-400 hover:text-gray-900 uppercase text-[10px] font-black tracking-[0.4em] transition-colors"

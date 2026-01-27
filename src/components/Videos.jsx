@@ -49,14 +49,23 @@ const VideoPlayer = ({ video, index }) => {
                     />
                 ) : (
                     <>
+
                         <video
                             ref={videoRef}
                             src={video.video_url}
                             className="w-full h-full object-cover"
                             autoPlay
-                            muted
+                            muted={isMuted}
+                            defaultMuted={true}
                             loop
                             playsInline
+                            onLoadedMetadata={() => {
+                                if (videoRef.current) {
+                                    videoRef.current.muted = true; // Force mute for autoplay policy
+                                    videoRef.current.play().catch(e => console.warn("Autoplay blocked:", e));
+                                }
+                            }}
+                            onError={(e) => console.error("Video load error:", video.video_url, e)}
                         />
                         {/* Unmute Button Overlay */}
                         <button
