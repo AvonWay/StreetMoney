@@ -113,7 +113,43 @@ const GlovesUp = () => {
                     </div>
                 </div>
             </section>
-        </div>
+
+
+            {/* Gallery Section */}
+            <section className="py-24 bg-white relative">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-16"
+                    >
+                        <h2 className="text-4xl md:text-5xl font-heading font-black text-gray-900 mb-6 uppercase">
+                            Latest <span className="text-gold-600">Events</span>
+                        </h2>
+                    </motion.div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                            { src: '/assets/gugd-event-michael-smith.jpg', title: 'Michael Smith vs Wooski Dumbout' },
+                            { src: '/assets/gugd-event-zac-miller.jpg', title: 'Zac Miller vs Ray Ray' },
+                            { src: '/assets/gugd-event-demetrius.jpg', title: 'Demetrius Lindsey vs Zach Tucker' },
+                            { src: '/assets/gugd-event-vendor.jpg', title: 'Vendor Registration' }
+                        ].map((img, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className="rounded-2xl overflow-hidden shadow-lg border border-gray-100 aspect-[4/5] group"
+                            >
+                                <img src={img.src} alt={img.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        </div >
     );
 };
 
