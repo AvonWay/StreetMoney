@@ -63,37 +63,42 @@ const Hero = () => {
                     </h1>
                 </motion.div>
 
-                {/* New Album Announcement Wrap */}
+                {/* Super Bowl Party Event - THIS SUNDAY */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1, duration: 1 }}
-                    className="mt-12 mb-10 max-w-2xl mx-auto"
+                    className="mt-12 mb-10 max-w-3xl mx-auto"
                 >
-                    <div className="relative group p-1 bg-gradient-to-r from-gold-500/50 via-gold-400 to-gold-500/50 rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(212,175,55,0.2)]">
-                        <div className="bg-white/90 backdrop-blur-3xl rounded-[2.9rem] p-6 md:p-8 flex items-center gap-6 md:gap-10">
-                            {/* Album Cover Thumbnail */}
-                            <div className="relative w-24 h-24 md:w-40 md:h-40 flex-shrink-0 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white rotate-[-3deg] group-hover:rotate-0 transition-transform duration-500">
-                                <img
-                                    src="/assets/gift-from-streets.jpg"
-                                    alt="Gift From The Streets Cover"
-                                    className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-700"
-                                />
-                                <div className="absolute inset-x-0 bottom-0 bg-gold-600/80 text-white text-[8px] font-black py-1 uppercase tracking-widest text-center">New Album</div>
-                            </div>
-
-                            {/* Album Text */}
-                            <div className="text-left">
-                                <h3 className="text-xl md:text-3xl font-heading font-black text-gray-900 leading-none mb-3 uppercase tracking-tighter">
-                                    {content.hero_subtitle || <>Gift From <span className="text-gold-600 underline decoration-4 underline-offset-4">The Streets</span></>}
-                                </h3>
-                                <div className="flex items-center gap-3">
-                                    <span className="px-3 py-1 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full">Coming Soon</span>
-                                    <p className="text-gray-500 text-xs font-bold uppercase tracking-widest hidden md:block">Dropping 2025</p>
+                    <div className="relative group p-1 bg-gradient-to-r from-red-500/50 via-blue-500/50 to-red-500/50 rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.3)]">
+                        <div className="bg-white/95 backdrop-blur-3xl rounded-[2.9rem] p-4 md:p-6">
+                            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                                {/* Event Poster */}
+                                <div className="relative w-full md:w-48 h-64 md:h-56 flex-shrink-0 rounded-[1.5rem] overflow-hidden shadow-2xl border-4 border-white group-hover:scale-105 transition-transform duration-500">
+                                    <img
+                                        src="/assets/superbowl-party.jpg"
+                                        alt="Super Bowl Party"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">This Sunday</div>
                                 </div>
-                                <div className="mt-4 flex gap-2">
-                                    <div className="w-8 h-1 bg-gold-500 rounded-full" />
-                                    <div className="w-16 h-1 bg-gray-200 rounded-full group-hover:bg-gold-300 transition-colors" />
+
+                                {/* Event Details */}
+                                <div className="text-center md:text-left flex-1">
+                                    <h3 className="text-2xl md:text-4xl font-heading font-black text-gray-900 leading-tight mb-2 uppercase tracking-tighter">
+                                        Super Bowl <span className="text-blue-600">Party</span>
+                                    </h3>
+                                    <div className="flex flex-col gap-2 mb-3">
+                                        <div className="flex items-center justify-center md:justify-start gap-2">
+                                            <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full">Feb 8, 2026</span>
+                                            <span className="text-gray-600 text-sm font-bold">This Sunday!</span>
+                                        </div>
+                                        <p className="text-gray-700 text-sm font-bold">Hosted by Luxary Group Arts</p>
+                                        <p className="text-gray-500 text-xs">BYOB • BYOW • Snacks & Food Provided</p>
+                                    </div>
+                                    <a href="#contact" className="inline-block px-6 py-2 bg-blue-600 text-white font-heading font-black text-sm uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-lg">
+                                        DM for Location
+                                    </a>
                                 </div>
                             </div>
                         </div>
