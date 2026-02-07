@@ -3,11 +3,17 @@ import { supabase } from '../supabase';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FaSpotify, FaApple, FaYoutube, FaSoundcloud, FaPlay, FaPause, FaDownload } from 'react-icons/fa';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import DownloadModal from './DownloadModal';
 
 const Music = () => {
     const [songs, setSongs] = useState([]);
     const [currentSong, setCurrentSong] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const [pendingDownload, setPendingDownload] = useState(null); // { type: 'song', data: song } or { type: 'album' }
     const audioRef = useRef(null);
 
     useEffect(() => {
@@ -50,6 +56,90 @@ const Music = () => {
         }
     }, [currentSong]);
 
+    const handleDownloadClick = (e, type, data = null) => {
+        if (e) e.preventDefault();
+
+        // Check if user is already registered
+        const isRegistered = localStorage.getItem('sm_music_registered') === 'true';
+
+        if (isRegistered) {
+            if (type === 'song') {
+                triggerSongDownload(data);
+            } else {
+                downloadAlbum();
+            }
+        } else {
+            setPendingDownload({ type, data });
+            setShowDownloadModal(true);
+        }
+    };
+
+    const triggerSongDownload = async (song) => {
+        try {
+            const response = await fetch(song.url);
+            const blob = await response.blob();
+            const filename = song.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "") + ".mp3";
+            saveAs(blob, filename);
+        } catch (error) {
+            console.error("Error downloading song:", error);
+            alert("Failed to download song. Please try again.");
+        }
+    };
+
+    const handleModalSuccess = () => {
+        if (pendingDownload) {
+            if (pendingDownload.type === 'song') {
+                triggerSongDownload(pendingDownload.data);
+            } else if (pendingDownload.type === 'album') {
+                downloadAlbum();
+            }
+            setPendingDownload(null);
+        }
+    };
+
+    const downloadAlbum = async () => {
+        if (songs.length === 0) return;
+        setIsDownloading(true);
+        try {
+            const zip = new JSZip();
+            const folder = zip.folder("Gift From The Streets");
+
+            // 1. Add Cover Art
+            console.log("Fetching cover art...");
+            const coverRes = await fetch('/assets/gift-from-streets.jpg');
+            if (coverRes.ok) {
+                const coverBlob = await coverRes.blob();
+                folder.file("Cover.jpg", coverBlob);
+            }
+
+            // 2. Add Songs
+            console.log("Fetching songs...", songs.length);
+            await Promise.all(songs.map(async (song) => {
+                try {
+                    const songRes = await fetch(song.url);
+                    if (songRes.ok) {
+                        const songBlob = await songRes.blob();
+                        const filename = song.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "") + ".mp3";
+                        folder.file(filename, songBlob);
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch song for zip:", song.name, e);
+                }
+            }));
+
+            // 3. Generate Zip
+            console.log("Generating zip...");
+            const content = await zip.generateAsync({ type: "blob" });
+            saveAs(content, "Gift From The Streets.zip");
+
+        } catch (error) {
+            console.error("Error creating album zip:", error);
+            alert("Failed to create album zip. Please try again.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
     return (
         <section id="music" className="py-24 bg-white border-t border-gray-100 relative">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
@@ -80,11 +170,11 @@ const Music = () => {
                         viewport={{ once: true }}
                         className="relative"
                     >
-                        <div className="relative aspect-square max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl group">
+                        <div className="relative aspect-square max-w-[280px] md:max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl group">
                             <img
                                 src="/assets/track-selection-updated.jpg"
                                 alt="Album Art"
-                                className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-all duration-700"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
                                 <h3 className="text-2xl font-heading font-bold text-white mb-2">
@@ -127,14 +217,13 @@ const Music = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 ml-4">
-                                    <a
-                                        href={song.url}
-                                        download
+                                    <button
+                                        onClick={(e) => handleDownloadClick(e, 'song', song)}
                                         className="p-3 text-gray-400 hover:text-gold-600 transition-colors"
                                         title="Download track"
                                     >
                                         <FaDownload size={20} />
-                                    </a>
+                                    </button>
                                 </div>
                             </motion.div>
                         )) : (
@@ -144,14 +233,27 @@ const Music = () => {
                             </div>
                         )}
 
-                        <div className="pt-8">
-                            <Link to="/bio" className="inline-block px-8 py-4 bg-gray-900 text-white font-heading font-bold uppercase tracking-widest hover:bg-gold-600 transition-all w-full md:w-auto shadow-xl text-center">
+                        <div className="pt-8 flex flex-col md:flex-row gap-4">
+                            <Link to="/bio" className="flex-1 px-8 py-4 bg-gray-900 text-white font-heading font-bold uppercase tracking-widest hover:bg-gold-600 transition-all shadow-xl text-center">
                                 Full Bio
                             </Link>
+                            <button
+                                onClick={(e) => handleDownloadClick(e, 'album')}
+                                disabled={isDownloading}
+                                className={`flex-1 px-8 py-4 font-heading font-bold uppercase tracking-widest transition-all shadow-xl text-center flex items-center justify-center gap-2 ${isDownloading ? 'bg-gray-400 cursor-not-allowed text-gray-700' : 'bg-gold-500 text-black hover:bg-white hover:text-gold-600'}`}
+                            >
+                                {isDownloading ? 'Zipping...' : 'Download Album'} <FaDownload />
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <DownloadModal
+                isOpen={showDownloadModal}
+                onClose={() => setShowDownloadModal(false)}
+                onSuccess={handleModalSuccess}
+            />
         </section>
     );
 };

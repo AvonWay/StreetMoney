@@ -1,12 +1,15 @@
 import ftp from 'basic-ftp';
-import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function deployTest() {
     const client = new ftp.Client();
-    client.ftp.verbose = true;
+    client.ftp.verbose = false;
 
     try {
-        console.log("Connecting...");
+        console.log("Connecting to FTP...");
         await client.access({
             host: "46.202.197.87",
             user: "u234209809",
@@ -15,18 +18,16 @@ async function deployTest() {
             secureOptions: { rejectUnauthorized: false }
         });
 
-        console.log("Connected.");
+        console.log("Connected! Uploading test.html...");
 
-        // create a dummy file
-        fs.writeFileSync("test_verify.html", "<h1>VERIFIED PATH OK</h1>");
+        // Try uploading to public_html/test.html
+        await client.uploadFrom(path.join(__dirname, "dist", "index.html"), "public_html/test.html");
 
-        await client.cd("public_html");
-        console.log("Uploading test_verify.html to public_html...");
-        await client.uploadFrom("test_verify.html", "test_verify.html");
+        console.log("Test Deployment Complete!");
 
-        console.log("Done. Check https://streetmoneyman.com/test_verify.html");
     } catch (err) {
-        console.error(err);
+        console.error("Test Deployment Failed:", err);
+        process.exit(1);
     }
     client.close();
 }

@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -27,6 +28,10 @@ const Navbar = () => {
         { title: 'Dashboard', href: '/admin', isRoute: true },
     ];
 
+    // Split links for desktop view
+    const visibleLinks = navLinks.slice(0, 3);
+    const dropdownLinks = navLinks.slice(3);
+
     return (
         <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md border-b border-gray-200 py-2 shadow-sm' : 'bg-transparent py-4'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,7 +44,8 @@ const Navbar = () => {
 
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-8">
-                            {navLinks.map((link) => (
+                            {/* Visible Links */}
+                            {visibleLinks.map((link) => (
                                 link.isRoute ? (
                                     <Link
                                         key={link.title}
@@ -60,6 +66,55 @@ const Navbar = () => {
                                     </a>
                                 )
                             ))}
+
+                            {/* Dropdown Menu */}
+                            <div
+                                className="relative inline-block text-left"
+                                onMouseEnter={() => setIsDropdownOpen(true)}
+                                onMouseLeave={() => setIsDropdownOpen(false)}
+                            >
+                                <button
+                                    className={`relative group font-heading text-lg transition-colors duration-300 uppercase tracking-wide overflow-hidden flex items-center gap-1 ${scrolled ? 'text-gray-600 hover:text-black' : 'text-gray-900 hover:text-black'}`}
+                                >
+                                    <span className="relative z-10">More</span>
+                                    <span className="relative z-10 text-xs text-gold-500">▼</span>
+                                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gold-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out" />
+                                </button>
+
+                                <AnimatePresence>
+                                    {isDropdownOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 backdrop-blur-3xl z-50 overflow-hidden"
+                                        >
+                                            {dropdownLinks.map((link) => (
+                                                link.isRoute ? (
+                                                    <Link
+                                                        key={link.title}
+                                                        to={link.href}
+                                                        className="block px-4 py-3 text-sm font-heading font-medium text-gray-700 hover:bg-gray-50 hover:text-black uppercase tracking-wide transition-colors"
+                                                        onClick={() => setIsDropdownOpen(false)}
+                                                    >
+                                                        {link.title}
+                                                    </Link>
+                                                ) : (
+                                                    <a
+                                                        key={link.title}
+                                                        href={link.href}
+                                                        className="block px-4 py-3 text-sm font-heading font-medium text-gray-700 hover:bg-gray-50 hover:text-black uppercase tracking-wide transition-colors"
+                                                        onClick={() => setIsDropdownOpen(false)}
+                                                    >
+                                                        {link.title}
+                                                    </a>
+                                                )
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </div>
 

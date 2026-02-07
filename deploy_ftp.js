@@ -29,15 +29,16 @@ async function deploy() {
         await client.cd("public_html");
         console.log("Changed to public_html. Current directory: " + await client.pwd());
 
-        console.log("Clearing remote directory...");
-        await client.clearWorkingDir();
+        // console.log("Clearing remote directory...");
+        // await client.clearWorkingDir();
 
 
-        await client.uploadFromDir(path.join(__dirname, "dist"), "public_html");
+        await client.uploadFromDir(path.join(__dirname, "dist"), ".");
 
         console.log("Deployment complete!");
     } catch (err) {
         console.error("Deployment Failed:", err);
+        process.exit(1);
     }
     client.close();
 }

@@ -36,7 +36,9 @@ async function checkExists(url) {
 
 async function insertSong(filename) {
     const name = filename.replace('.mp3', '');
-    const url = `/uploads/${filename}`;
+    const STORAGE_URL = 'https://tlzasuzpxrcphoxojwvk.supabase.co/storage/v1/object/public/uploads';
+    // Use encodeURIComponent for the URL part but keep the name readable
+    const url = `${STORAGE_URL}/${encodeURIComponent(filename)}`;
     const song = {
         name: name,
         url: url,
@@ -58,9 +60,11 @@ async function insertSong(filename) {
 
 async function seedSongs() {
     console.log(`Processing ${songs.length} songs...`);
+    const STORAGE_URL = 'https://tlzasuzpxrcphoxojwvk.supabase.co/storage/v1/object/public/uploads';
 
     for (const filename of songs) {
-        const url = `/uploads/${filename}`;
+        // Must match the format used in insertSong
+        const url = `${STORAGE_URL}/${encodeURIComponent(filename)}`;
         if (await checkExists(url)) {
             console.log(`Skipped (exists): ${filename}`);
         } else {

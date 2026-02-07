@@ -5,19 +5,32 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkBuckets() {
-    const { data, error } = await supabase.storage.listBuckets();
-    if (error) console.log("List Buckets Error:", error);
-    else {
-        console.log("Buckets:", data);
-        for (const bucket of data) {
-            const { data: files, error: listError } = await supabase.storage.from(bucket.name).list();
-            if (listError) console.log(`Error listing ${bucket.name}:`, listError);
-            else {
-                console.log(`--- Files in ${bucket.name} (${files.length}) ---`);
-                files.slice(0, 5).forEach(f => console.log(f.name));
+    const bucketName = 'uploads';
+    console.log(`Checking bucket: ${bucketName}`);
+
+    let allFiles = [];
+    let offset = 0;
+    let batchSize = 100;
+    let loop = true;
+
+    while (loop) {
+        const { data: files, error: listError } = await supabase.storage.from(bucketName).list(null, { limit: batchSize, offset: offset });
+        if (listError) {
+            console.log(`Error listing ${bucketName}:`, listError);
+            loop = false;
+        } else {
+            if (files && files.length > 0) {
+                allFiles = allFiles.concat(files);
+                offset += files.length;
+                if (files.length < batchSize) loop = false;
+            } else {
+                loop = false;
             }
         }
     }
+
+    console.log(`--- Files in ${bucketName} (${allFiles.length}) ---`);
+    allFiles.forEach(f => console.log(f.name));
 }
 
 checkBuckets();
