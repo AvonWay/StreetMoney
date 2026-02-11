@@ -1,6 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { FaDownload } from 'react-icons/fa';
+import DownloadModal from './DownloadModal';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 const Hero = () => {
     const ref = useRef(null);
@@ -13,21 +17,78 @@ const Hero = () => {
     const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
     const [content, setContent] = useState({});
+    const [songs, setSongs] = useState([]);
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     useEffect(() => {
-        const fetchContent = async () => {
-            const { data, error } = await supabase.from('content').select('*');
-            if (data) {
-                // Convert array of key-value pairs to object
-                const contentMap = data.reduce((acc, curr) => {
+        const fetchData = async () => {
+            // Fetch content
+            const { data: contentData } = await supabase.from('content').select('*');
+            if (contentData) {
+                const contentMap = contentData.reduce((acc, curr) => {
                     acc[curr.key] = curr.value;
                     return acc;
                 }, {});
                 setContent(contentMap);
             }
+
+            // Fetch songs for album download
+            const { data: songsData } = await supabase.from('songs').select('*');
+            if (songsData) setSongs(songsData);
         };
-        fetchContent();
+        fetchData();
     }, []);
+
+    const handleDownloadClick = () => {
+        const isRegistered = localStorage.getItem('sm_music_registered') === 'true';
+        if (isRegistered) {
+            downloadAlbum();
+        } else {
+            setShowDownloadModal(true);
+        }
+    };
+
+    const downloadAlbum = async () => {
+        if (songs.length === 0) {
+            alert("No songs found to download.");
+            return;
+        }
+        setIsDownloading(true);
+        try {
+            const zip = new JSZip();
+            const folder = zip.folder("Gift From The Streets");
+
+            // Add Cover Art (using the provided banner image as fallback or primary)
+            const coverRes = await fetch('/assets/gift-from-streets.jpg');
+            if (coverRes.ok) {
+                const coverBlob = await coverRes.blob();
+                folder.file("Cover.png", coverBlob);
+            }
+
+            // Add Songs
+            await Promise.all(songs.map(async (song) => {
+                try {
+                    const songRes = await fetch(song.url);
+                    if (songRes.ok) {
+                        const songBlob = await songRes.blob();
+                        const filename = song.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "") + ".mp3";
+                        folder.file(filename, songBlob);
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch song for zip:", song.name, e);
+                }
+            }));
+
+            const contentZip = await zip.generateAsync({ type: "blob" });
+            saveAs(contentZip, "Gift From The Streets.zip");
+        } catch (error) {
+            console.error("Error creating album zip:", error);
+            alert("Failed to create album zip. Please try again.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     return (
         <section id="home" ref={ref} className="relative h-screen w-full overflow-hidden flex items-center justify-center">
@@ -63,45 +124,48 @@ const Hero = () => {
                     </h1>
                 </motion.div>
 
-                {/* Super Bowl Party Event - THIS SUNDAY */}
+                {/* Album Progress Banner */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1, duration: 1 }}
-                    className="mt-12 mb-10 max-w-3xl mx-auto"
+                    transition={{ delay: 0.8, duration: 0.8 }}
+                    className="mt-12 mb-10 max-w-2xl mx-auto group"
                 >
-                    <div className="relative group p-1 bg-gradient-to-r from-red-500/50 via-blue-500/50 to-red-500/50 rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.3)]">
-                        <div className="bg-white/95 backdrop-blur-3xl rounded-[2.9rem] p-4 md:p-6">
-                            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-                                {/* Event Poster */}
-                                <div className="relative w-full md:w-48 h-64 md:h-56 flex-shrink-0 rounded-[1.5rem] overflow-hidden shadow-2xl border-4 border-white group-hover:scale-105 transition-transform duration-500">
-                                    <img
-                                        src="/assets/superbowl-party.jpg"
-                                        alt="Super Bowl Party"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">This Sunday</div>
+                    <div className="relative overflow-hidden rounded-[2rem] border border-gray-100 shadow-2xl bg-white p-4 md:p-6 transition-all duration-500 hover:shadow-gold-500/20">
+                        <div className="flex flex-col md:flex-row items-center gap-8">
+                            <div className="relative w-48 h-48 flex-shrink-0 animate-float">
+                                <img
+                                    src="/assets/gift-from-streets.jpg"
+                                    alt="Album Artwork"
+                                    className="w-full h-full object-contain rounded-xl shadow-lg"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/20 to-transparent rounded-xl" />
+                            </div>
+                            <div className="text-left flex-1">
+                                <div className="inline-block px-3 py-1 bg-gold-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full mb-3">
+                                    New Album
                                 </div>
-
-                                {/* Event Details */}
-                                <div className="text-center md:text-left flex-1">
-                                    <h3 className="text-2xl md:text-4xl font-heading font-black text-gray-900 leading-tight mb-2 uppercase tracking-tighter">
-                                        Super Bowl <span className="text-blue-600">Party</span>
-                                    </h3>
-                                    <div className="flex flex-col gap-2 mb-3">
-                                        <div className="flex items-center justify-center md:justify-start gap-2">
-                                            <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full">Feb 8, 2026</span>
-                                            <span className="text-gray-600 text-sm font-bold">This Sunday!</span>
-                                        </div>
-                                        <p className="text-gray-700 text-sm font-bold">Hosted by Luxary Group Arts</p>
-                                        <p className="text-gray-500 text-xs">BYOB • BYOW • Snacks & Food Provided</p>
-                                    </div>
-                                    <a href="#contact" className="inline-block px-6 py-2 bg-blue-600 text-white font-heading font-black text-sm uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-lg">
-                                        DM for Location
-                                    </a>
-                                </div>
+                                <h3 className="text-3xl font-heading font-black text-gray-900 uppercase leading-none mb-2">
+                                    Gift <span className="text-gold-600">From The</span> Streets
+                                </h3>
+                                <p className="text-gray-500 text-sm font-medium mb-6 leading-relaxed">
+                                    The wait is over. Experience the raw energy and hustle of the streets through this definitive collection.
+                                </p>
+                                <button
+                                    onClick={handleDownloadClick}
+                                    disabled={isDownloading}
+                                    className={`w-full md:w-auto px-8 py-4 font-heading font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3 ${isDownloading ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-gold-500 hover:text-black'}`}
+                                >
+                                    {isDownloading ? 'Downloading...' : (
+                                        <>
+                                            Download Album <FaDownload className="text-sm" />
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
+                        {/* Decorative background element */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2" />
                     </div>
                 </motion.div>
 
@@ -119,6 +183,12 @@ const Hero = () => {
                         Latest Tracks
                     </a>
                 </motion.div>
+
+                <DownloadModal
+                    isOpen={showDownloadModal}
+                    onClose={() => setShowDownloadModal(false)}
+                    onSuccess={downloadAlbum}
+                />
             </div>
 
             {/* Scroll Indicator */}

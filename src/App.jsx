@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import Bio from './components/Bio';
 import GlovesUp from './components/GlovesUp';
+import Partners from './components/Partners';
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
             <div className="bg-white min-h-screen font-sans selection:bg-gold-500 selection:text-black">
               <Navbar />
               <Hero />
+              <Partners />
               <About />
               <Videos />
               <Events />

@@ -172,7 +172,7 @@ const Music = () => {
                     >
                         <div className="relative aspect-square max-w-[280px] md:max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl group">
                             <img
-                                src="/assets/track-selection-updated.jpg"
+                                src="/assets/gift-from-streets.jpg"
                                 alt="Album Art"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
                             />
